@@ -1,14 +1,9 @@
-""" Table 5 """
-
 from pickle import FALSE, TRUE
-
 import importing_modules as im
-
 import copy as cy
-
 import pandas as pd
-
 import average_results as ar
+import os
 
 if __name__ == "__main__":
 
@@ -52,23 +47,25 @@ if __name__ == "__main__":
         30: {"uniform": "12.665814697812916-lev-uniform-30",
         "linear": "12.665814697812916-lev-linear-30",
         "exponential1": "12.665814697812916-lev-exp1-30", 
-        "exponential2.3": "12.665814697812916-lev-exp2-30",
-        "step": "12.665814697812916-lev-step-30"},
+        "exponential10": "12.665814697812916-lev-exp10-30"
+        },
         20: {"uniform": "11.118127820283755-lev-uniform-20",
         "linear": "11.118127820283755-lev-linear-20",
         "exponential1": "11.118127820283755-lev-exp1-20", 
-        "exponential2.3": "11.118127820283755-lev-exp2-20",
-        "step": "11.118127820283755-lev-step-20"},
+        "exponential10": "11.118127820283755-lev-exp10-20"
+        },
         10: {"uniform": "7.846093132926077-lev-uniform-10",
         "linear": "7.846093132926077-lev-linear-10",
         "exponential1": "7.846093132926077-lev-exp1-10", 
-        "exponential2.3": "7.846093132926077-lev-exp2-10",
-        "step": "7.846093132926077-lev-step-10"}
+        "exponential10": "7.846093132926077-lev-exp10-10"
+        }
     }
 
     column_name = ["Initial DR", "Optimized DR", "% Reduction", "Init std", "Opt Std", "Red Std"]
 
-    out_path = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\prints\table"
+    # Load the data
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    out_path = os.path.join(path_base, "data", "prints", "table")
 
     # DR
     do_leverage_results = False # don't change

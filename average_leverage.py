@@ -1,12 +1,9 @@
-""" Figure 6 """
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-
 import average_results as ar
-
 from matplotlib.font_manager import FontProperties
-
+import os
 
 if __name__ == "__main__":
 
@@ -67,7 +64,6 @@ if __name__ == "__main__":
         "uniform": 'Uniform',
         "linear": 'Linear',
         "exponential1": 'Exponential',
-        "exponential2.3": "Exponential v=2.3",
         "exponential10": 'Exponential v=10.0'
     }
 
@@ -75,13 +71,14 @@ if __name__ == "__main__":
         "uniform": 'r',
         "linear": 'b',
         "exponential1": 'y',
-        "exponential2.3": 'g',
         "exponential10": 'c'
     }
 
     column_name = ["Initial DR", "Optimized DR", "% Reduction", "Init std", "Opt Std", "Red Std"]
 
-    out_path = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\prints\table"
+    # Load the data
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    out_path = os.path.join(path_base, "data", "prints", "table")
 
     # DR
     do_leverage_results = True

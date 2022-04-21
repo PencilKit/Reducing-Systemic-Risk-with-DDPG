@@ -1,20 +1,18 @@
-from mimetypes import init
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-
 from network_gym.envs import model_network as network_model
-
+import os
 import math
 
 # Width for plots
 fig_width = 397.48499
 
 # Load the data
-path_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data/network_py_data\to_print/" 
+path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+path_str = os.path.join(path_base, "data", "network_py_data", "to_print/")
 ext_str = ".npy"
-out_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data/prints/" 
-
+out_str = os.path.join(path_base, "data", "prints/")
 
 re_calculate_DR = True
 

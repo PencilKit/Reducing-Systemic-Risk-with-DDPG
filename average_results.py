@@ -1,5 +1,3 @@
-
-
 import os
 from absl import logging
 import tensorflow as tf
@@ -67,28 +65,9 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
     # Action scale to scale actions \in [-1.0, 1.0]^d
     ACTION_SCALE = 100000
 
-    batch_size = 256 # 64  256
-    # batch_size = 1024
-
-    ddpg_num_iterations = 15000 # episodes # 50,000 15000
-    ddpg_initial_collect_steps = int(0.05*ddpg_num_iterations) - 500 # 200
-    ddpg_eval_interval = 100
-    ddpg_replay_buffer_capacity = int(0.05*ddpg_num_iterations) - 500 # replay buffer size of 750 seem to be okay.
-    ddpg_log_interval = 20
-    ddpg_num_iterations = 5000 # episodes # 8000
-    # ddpg_initial_collect_steps = 256
-    # ddpg_num_iterations = 7000
-    # 256 steps per episode, 10000 episodes and use 10^5 replay buffer
-
-    # ddpg_num_iterations = 10
-    # ddpg_initial_collect_steps = 1
-    # ddpg_eval_interval = 2
-    # ddpg_log_interval = 2
 
     MAX_EPISODE_STEPS = 50 # try 1000
 
-    collect_steps_per_iteration = 1
-    train_steps_per_iteration = 1
 
     critic_learning_rate = 3e-4 # morgan normally uses this. If lr is small then use >>> episode steps
     actor_learning_rate = 3e-5
@@ -99,18 +78,12 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
 
     gaussian_std = 0.15
 
-    gradient_clipping = None 
-
-    num_eval_episodes = 1
-
-    current = np.datetime64(datetime.now().replace(microsecond=0).isoformat(' '))
-
-    root_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data"
-    root_R_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\R folder\Systemic Risk MILP\Data"
-    checkpoint_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\checkpoints"
+    # Load the data
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    root_str = os.path.join(path_base, "data")
+    root_R_str = os.path.join(path_base, "data", "R folder", "Systemic Risk", "Data")
 
     NetworkImporter = im.NetworkImporter(
-        checkpoint_str,
         root_R_str,
         "R_initial_networks",
         "R_networth",
@@ -198,56 +171,6 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
         for eval_node, training_node, lev_val in zip(eval_complex_network.bank_list, training_complex_network.bank_list, GAMMA_NET):
             eval_node.leverage_ratio = lev_val
             training_node.leverage_ratio = lev_val
-    # [0.05739085662244002, 0.05739085662244002, 0.3356687372055704]
-    # [0.03171538607047067, 0.18549755516455313, 0.23323750921542663]
-
-    # for seedn0 in range(1, 10000):
-    #     for seedn1 in range(1, 10000):
-    #         for seedn2 in range(1, 6714):
-    #             # 6714
-    #             NetworkImporter = im.NetworkImporter(
-    #                 checkpoint_str,
-    #                 root_R_str,
-    #                 "R_initial_networks",
-    #                 "R_networth",
-    #                 N_NODES,
-    #                 NUM_LAYERS,
-    #                 seed=[seedn0+1, seedn1+1, seedn2+1]
-    #                 )
-
-    #             dr_sum = network_model.Multigraph(
-    #                 N_nodes=N_NODES,
-    #                 num_layers=NUM_LAYERS,
-    #                 total_assets=TOTAL_ASSETS,
-    #                 thetas=THETAS,
-    #                 beta=BETA,
-    #                 gamma=GAMMA_NET,
-    #                 r=R,
-    #                 c_eps=None,
-    #                 rew_lambda=REW_LAMBDA,
-    #                 rew_rho=REW_RHO,
-    #                 network_importer=NetworkImporter,
-    #                 is_eval=False
-    #             ).init_debtrank.sum()
-    #             if dr_sum > 2.79:
-    #                 print("STOP")
-
-    train_dir, eval_dir = ResultLogger.make_tensorboard_dir(str(training_complex_network.init_debtrank.sum()))
-    
-    # import networkx.algorithms.isomorphism as iso
-    # import networkx as nx
-    # em = iso.numerical_edge_match('loans', 1)
-    # debtrank_str = str(eval_complex_network.init_debtrank.sum())
-    # with open(os.path.join(root_str,"network_py_data", "initial_network")  + "\\" + debtrank_str + '_network.npy', 'wb') as f:
-    #     np.savez(
-    #         f,
-    #         network=eval_complex_network.multi_adj,
-    #         debtrank=eval_complex_network.init_debtrank,
-    #         networth=[bank_node.net_worth for bank_node in  eval_complex_network.bank_list],
-    #         creditrisk=[bank_node.leverage_ratio for bank_node in  eval_complex_network.bank_list],
-    #         c_eps=eval_complex_network.c_eps,
-    #         parameters=parameters
-    #         )
 
     print(training_complex_network.init_debtrank.sum())
     TrainingComplexNetworkEnvironment = NetworkEnvironment(training_complex_network, ResultLogger, MAX_EPISODE_STEPS, ACTION_SCALE)
@@ -261,22 +184,12 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
     TrainingComplexNetworkEnvironment.add_safety_layer(safety_layer)
     EvalComplexNetworkEnvironment.add_safety_layer(safety_layer)
 
-    # TrainingComplexNetworkEnvironment.reset()
-
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     train_env = tf_py_environment.TFPyEnvironment(TrainingComplexNetworkEnvironment)
-    eval_env = tf_py_environment.TFPyEnvironment(EvalComplexNetworkEnvironment)
 
-    initial_dr = EvalComplexNetworkEnvironment._complex_network.init_debtrank.sum()
-    
-
-    # if POLICY == None:
-    #     policy_path = os.path.join(root_str, "policy", str(initial_dr))
-    # else:
     policy_path = os.path.join(root_str, "policy", POLICY)
 
-    from os import listdir
     policy_list = np.array([float(dr) for dr in os.listdir(policy_path)])
 
     min_policy_folder_name = str(np.min(policy_list)) # The policy to use
@@ -300,9 +213,7 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
             dr_list.append(
                 TrainingComplexNetworkEnvironment._complex_network._sum_debtranks(TrainingComplexNetworkEnvironment._complex_network.curr_debtrank).sum()
                 )
-        # print("The average over ", NUM_EPISODES, " is:")
-        # print("Init: ", np.mean(np.array(init_dr_list)))
-        # print("Opt: ", np.mean(np.array(dr_list)))
+
         init_dr_list = np.array(init_dr_list)
         dr_list = np.array(dr_list)
 
@@ -546,9 +457,7 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
             high_dr_list.append(np.sum(debtrank[0][:int(N_NODES/2)]))
             low_dr_list.append(np.sum(debtrank[0][int(N_NODES/2):]))
 
-        # print("The average over ", NUM_EPISODES, " is:")
-        # print("Init: ", np.mean(np.array(init_dr_list)))
-        # print("Opt: ", np.mean(np.array(dr_list)))
+
         avg_high_dr = np.mean(high_dr_list)
         avg_low_dr = np.mean(low_dr_list)
 
@@ -565,38 +474,6 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
         return average_cc_nn()
     elif results == "leverage":
         return average_leverage()
-
-    # init_dr_list = []
-    # dr_list = []
-    # for _ in range(NUM_EPISODES):
-    #     time_step = train_env.reset()
-    #     init_dr_list.append(
-    #         TrainingComplexNetworkEnvironment._complex_network._sum_debtranks(TrainingComplexNetworkEnvironment._complex_network.init_debtrank).sum()
-    #     )
-
-    #     while not time_step.is_last():
-    #         action_step = saved_policy.action(time_step)
-    #         time_step = train_env.step(action_step.action)
-    #     dr_list.append(
-    #         TrainingComplexNetworkEnvironment._complex_network._sum_debtranks(TrainingComplexNetworkEnvironment._complex_network.curr_debtrank).sum()
-    #         )
-    # # print("The average over ", NUM_EPISODES, " is:")
-    # # print("Init: ", np.mean(np.array(init_dr_list)))
-    # # print("Opt: ", np.mean(np.array(dr_list)))
-    # init_dr_list = np.array(init_dr_list)
-    # dr_list = np.array(dr_list)
-
-    # reduction_list = 100*np.abs(dr_list - init_dr_list)/init_dr_list
-
-    # initial_avg = np.mean(init_dr_list)
-    # initial_std = np.std(init_dr_list)
-    # opt_avg = np.mean(dr_list)
-    # opt_std = np.std(dr_list)
-
-    # reduction_avg = np.mean(reduction_list)
-    # reduction_std = np.std(reduction_list)
-    # return initial_avg, opt_avg, reduction_avg, initial_std, opt_std, reduction_std
-
 
 
 if __name__ == "__main__":
@@ -637,30 +514,6 @@ if __name__ == "__main__":
         }
     }
 
-    # uniform_to_original_dict = {
-    #     5.582702080182561: 7.7408578246030135, # 10, 1
-    #     7.8657946463219135: 14.021826409799196,
-    #     11.697802854336242: 21.37639441829311,
-    # }
-
-    # lev_policy_dict = {
-    #     30: {"uniform": "12.665814697812916-lev-uniform-30",
-    #     "linear": "12.665814697812916-lev-linear-30",
-    #     "exponential1": "12.665814697812916-lev-exp1-30", 
-    #     "exponential2.3": "12.665814697812916-lev-exp2-30"
-    #     },
-    #     20: {"uniform": "11.118127820283755-lev-uniform-20",
-    #     "linear": "11.118127820283755-lev-linear-20",
-    #     "exponential1": "11.118127820283755-lev-exp1-20", 
-    #     "exponential2.3": "11.118127820283755-lev-exp2-20"
-    #     },
-    #     10: {"uniform": "7.846093132926077-lev-uniform-10",
-    #     "linear": "7.846093132926077-lev-linear-10",
-    #     "exponential1": "7.846093132926077-lev-exp1-10", 
-    #     "exponential2.3": "7.846093132926077-lev-exp2-10"
-    #     }
-    # }
-
     lev_policy_dict = {
         30: {"uniform": "12.665814697812916-lev-uniform-30",
         "linear": "12.665814697812916-lev-linear-30",
@@ -681,16 +534,19 @@ if __name__ == "__main__":
 
     column_name = ["Initial DR", "Optimized DR", "% Reduction", "Init std", "Opt Std", "Red Std"]
 
-    out_path = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\prints\table"
+    # Load the data
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    out_path = os.path.join(path_base, "data", "prints", "table")
 
     # DR
-    do_leverage_results = True
-    number_of_episodes = 100
+    do_leverage_results = False
+    number_of_episodes = 1
+    CASE = "original" # or replcae with "original"
 
     if do_leverage_results == False:
         layer_ind = [1,2,3]
         table_list = []
-        for case in ["uniform"]:
+        for case in [CASE]:
             if case == "uniform":
                 policy_dict = policy_uniform_dict
                 print(case)
@@ -737,7 +593,6 @@ if __name__ == "__main__":
                     POLICY=lev_policy_dict[n][weight_func],
                     results="main"
                     )
-                # reduction = 100*np.abs(avg_optimized_dr - avg_initial_dr) / avg_initial_dr
 
                 weight_rows.extend([avg_initial_dr, avg_optimized_dr, avg_reduction, std_init, std_opt, std_red])
             
@@ -752,12 +607,3 @@ if __name__ == "__main__":
     table_df.to_csv(out_path + "/table_3-" + str(do_leverage_results) + "_" + str(number_of_episodes) + "_" + case + ".csv")
 
     print(table_df)
-
-
-    
-        # # Column labels
-        # label = ["1", "2", "3"]
-
-        # jaccard_df = pd.DataFrame(jaccard_table_list, columns=label, index=label)
-        # print(jaccard_df)
-        # jaccard_df.to_csv(out_str+ "/jaccard_" + network_str_list[net_n]+".csv")

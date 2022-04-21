@@ -23,7 +23,7 @@ class NetworkImporter(object):
     From this folder we sample a random network.
 
     """
-    def __init__(self, checkpoint_dir, parent_dir, liability_network_dir, networth_dir, n_nodes, num_layers, uniform=False, seed=None):
+    def __init__(self, parent_dir, liability_network_dir, networth_dir, n_nodes, num_layers, uniform=False, seed=None):
         self.liability_fname = "R_liability_network"
         self.networth_fname = "R_networth_values"
 

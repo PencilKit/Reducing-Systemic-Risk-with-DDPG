@@ -14,7 +14,6 @@ from tf_agents.metrics import tf_metrics
 
 from tf_agents.eval import metric_utils
 
-
 from tf_agents.drivers import dynamic_step_driver
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 
@@ -40,40 +39,6 @@ import os
 import cProfile
 import pstats
 import io
-
-# class CumulativeConstraintViolations(py_metric.PyStepMetric):
-#     def __init__(self, multi_adj_shape, total_lending, m_total_loan, m_total_borrowing, c_eps, name="CumulativeConstraintViolations"):
-#         super(py_metric.PyStepMetric, self).__init__(name)
-#         self.constraint_violation_counter = 0
-#         self.multi_adj_shape = multi_adj_shape
-#         self.total_lending = total_lending
-#         self.m_total_loan = m_total_loan
-#         self.m_total_borrowing = m_total_borrowing
-#         self.c_eps = c_eps
-
-#     def reset(self):
-#         pass
-
-#     def call(self, trajectories):
-#         multi_adj = tf.reshape(trajectories.observation, self.multi_adj_shape).numpy()
-
-#         for alpha in range(multi_adj.shape[0]):
-#             multi_adj[alpha] = multi_adj[alpha] * self.total_lending[alpha]
-
-#         if np.all(np.abs(multi_adj.sum(axis=2) - self.m_total_loan).sum(axis=0) \
-#             + np.abs(multi_adj.sum(axis=1) - self.m_total_borrowing).sum(axis=0) > self.c_eps):
-#             self.constraint_violation_counter += 1
-
-#     def result(self):
-#         return self.constraint_violation_counter
-
-# class TFCumulativeConstraintViolations(tf_py_metric.TFPyMetric):
-#     def __init__(self, multi_adj_shape, total_lending, m_total_loan, m_total_borrowing, other_assets, name="ConstraintViolationsPerStep", dtype=tf.int16):
-#         py_metric = CumulativeConstraintViolations(multi_adj_shape, total_lending, m_total_loan, m_total_borrowing, other_assets)
-
-#         super(TFCumulativeConstraintViolations, self).__init__(
-#             py_metric=py_metric, name=name, dtype=dtype
-#         )
 
 def train_and_evaluate_agent_ddpg(tf_agent, use_tf_function=False, name='agent'):
 
@@ -179,17 +144,6 @@ def train_and_evaluate_agent_ddpg(tf_agent, use_tf_function=False, name='agent')
         experience, _ = next(iterator)
         return tf_agent.train(experience)
 
-        # # NOTE: Line 260 in ddpg_agent.py
-        # # Users/richa/anaconda3/envs/main_ddpg_tf25/Lib/site-packages/tf_agents/agents/ddpg/ddpg_agent.py/DdpgAgent/_train
-        # # You made the change of removing the weights parameter
-        
-        # # 348
-        # # line 243 removed the weights parameter
-
-        # # May need to go into critic loss and how you calculate that. 
-
-        return training_loss, buffer_info
-
     if use_tf_function:
         train_step = common.function(train_step)
 
@@ -242,7 +196,7 @@ if __name__ == "__main__":
     np.random.seed(1)
 
     # DR
-    N_NODES = 10
+    N_NODES = 30
     NUM_LAYERS = 3
 
 
@@ -251,7 +205,7 @@ if __name__ == "__main__":
     NETWORK_SEED = [20,20,20] #
     BETA = 0.18
     LEVERAGE_EXP = False
-    CASE = "original"
+    CASE = "original" # can be set to either "original" or "uniform"
 
 
     if LEVERAGE_EXP == True:
@@ -288,9 +242,6 @@ if __name__ == "__main__":
     ddpg_log_interval = 20
     ddpg_num_iterations = 8000 # max iterations
 
-    ddpg_log_interval = 2 #################
-    ddpg_num_iterations = 6 # max iterations###############
-
     MAX_EPISODE_STEPS = 50
 
     collect_steps_per_iteration = 1
@@ -311,12 +262,11 @@ if __name__ == "__main__":
 
     current = np.datetime64(datetime.now().replace(microsecond=0).isoformat(' '))
 
-    root_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data"
-    root_R_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\R folder\Systemic Risk MILP\Data"
-    checkpoint_str = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\checkpoints"
-    
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    root_str = os.path.join(path_base, "data")
+    root_R_str = os.path.join(path_base, "data", "R folder", "Systemic Risk", "Data")
+
     NetworkImporter = im.NetworkImporter(
-        checkpoint_str,
         root_R_str,
         "R_initial_networks",
         "R_networth",

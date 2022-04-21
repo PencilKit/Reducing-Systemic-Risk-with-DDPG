@@ -257,6 +257,29 @@ class Multigraph(object):
 
                 weight['loans'] = network_importer.liability_network[alpha][source, target].copy()
 
+        elif network_array is not None:
+            # This means you have a custom network that doesn't use the network importer module
+            custom_network = network_array[alpha].copy()
+            custom_network[custom_network > 0] = 1
+            graph = nx.convert_matrix.from_numpy_array(
+                custom_network,
+                parallel_edges=False,
+                create_using=nx.DiGraph
+                )
+            graph = nx.complete_graph(self.N_nodes, nx.DiGraph())
+
+            adj_mat = nx.to_numpy_array(graph)
+
+            # Need to get the loans and borrowings of all edges before creating the
+            # the balance sheet.
+            for (source, target, weight) in graph.edges(data=True):
+                # For the edges incident on the node return a tuple
+                # (source, target, weight)
+                
+                weight.clear()
+
+                weight['loans'] = network_array[alpha][source, target].copy()
+
         return graph
 
     def calculate_loans(self, source, target, adj_mat, graph, theta):
@@ -429,37 +452,8 @@ class Multigraph(object):
 
         return debt_rank
 
-    def make_experience_delta(self, x=None):
-        """ Make the \Delta L used in incrementing the liabiltiy network where both the
-        rows and columns sum to zero. """
-
-        scalars = np.reshape(x, (self.num_layers, self.null_space_dim))
-
-        delta_ls = []
-        for alpha in range(self.num_layers):
-
-            delta = np.matmul(self.basis, scalars[alpha])
-
-            delta = np.matmul(self.basis, scalars[alpha])
-            delta = np.reshape(delta, ( self.N_nodes, self.N_nodes-1))
-
-            lower_tri = np.concatenate((np.tril(delta, -1), np.zeros((delta.shape[0], 1))), axis=1)
-            upper_tri = np.concatenate((np.zeros((delta.shape[0], 1)), np.triu(delta)), axis=1)
-
-            delta_ls.append(lower_tri + upper_tri)
-
-        self.delta = np.array(delta_ls)
-
-        return self.delta
-
     def update(self):
-        """ Gets 
-        - the in degree list
-        - the out degree list
-        - calculates the debtrank
-
-        """
-
+ 
         # udpate the in, out, and debtrank of the network.
         in_degree = []
         out_degree = []
@@ -548,8 +542,6 @@ class Multigraph(object):
         return relative_dr
 
     def _calculate_debtrank_difference(self, multi_debtrank=True, borrowing_constraint=False):
-        """ test_debtrank is any new changes you are testing. Otherwise go back to the 
-        old averaging of the debtrank... """
 
         def exp_weight(x, weight):
             return np.exp(x*weight)
@@ -590,12 +582,9 @@ class Multigraph(object):
         return self._reward
 
     def reset(self):
-        # self.__init__(**self.initial_params)
 
         if self.is_eval == True:
-            # Get the multi_adj #NOTE: WILL THIS CAUSE MEMORY ISSUES COPYING NEW OBJECTS OVER AND OVER?
             self.multi_adj = self.initial_multi_adj.copy()
-            # Reset the current DR to the initial DR
             
             # Update other properties
             for alpha in range(self.num_layers):
@@ -640,7 +629,6 @@ class Multigraph(object):
         x_value = np.array(mat)
         norm_x_value = []
         for alpha in range(self.num_layers):
-            # norm_x_value.append(x_value[alpha]/max_loans[:, np.newaxis])
             max_loans = self.total_assets * self.thetas[alpha]
             norm_x_value.append(x_value[alpha]/max_loans)
             
@@ -649,7 +637,6 @@ class Multigraph(object):
         return self
 
     def _get_obs(self):
-        # return self.normalized_liability_mat
         return self.normalized_liability_mat.flatten()
 
     def _get_done(self, safe_sample=False):
