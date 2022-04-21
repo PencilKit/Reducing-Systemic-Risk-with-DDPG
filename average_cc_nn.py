@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import pickle
-
+import os
 import average_results as ar
 
 if __name__ == "__main__":
@@ -64,7 +64,9 @@ if __name__ == "__main__":
 
     column_name = ["Initial DR", "Optimized DR", "% Reduction", "Init std", "Opt Std", "Red Std"]
 
-    out_path = r"C:\Users\richa\My Drive\York\PhD Research\Systemic Risk\data\prints\table"
+    # Load the data
+    path_base = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    out_path = os.path.join(path_base, "data", "prints", "table")
 
     # DR
     do_leverage_results = False
