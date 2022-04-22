@@ -20,23 +20,15 @@ def calculate_DR(network, networth):
     temp_network = network_model.LiteMultigraph(network, networth)
     return temp_network.calculate_multilayer_debtrank()
 
-# path_str = path_str + "/"
 
+# Uncomment to choose which you want to print 
 # N=30, M=3
 init_network_str = "33.295454885318456_network"
 red_network_str = "19.583415955389167_network"
 
-# # N=30, M=1 # no weight leverage
-# init_network_str = "10.209733547617143_network"
-# red_network_str = "2.57661598537072_network"
-
-# N=20, M=2
-# init_network_str = "16.559382416299947_network"
-# red_network_str = "7.135312888487606_network"
-
-# DONT DO THIS # N=30, M=1 # better no weight leverage
-# init_network_str = "12.665814697812916_network"
-# red_network_str = "2.923648364762014_network"
+# N=30, M=1 # no weight leverage
+init_network_str = "10.209733547617143_network"
+red_network_str = "2.57661598537072_network"
 
 
 initial_network = np.load(path_str + init_network_str + ext_str)

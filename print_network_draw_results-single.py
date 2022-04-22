@@ -13,14 +13,8 @@ out_str = os.path.join(path_base, "data", "prints/")
 
 
 # NOTE: Don't forget to double check these
-num_layers = 3
 n_eps = 1
 dr_eps = 1e-5
-nodes = 30
-
-# N=30, M=3
-init_network_str = "33.295454885318456_network"
-red_network_str = "19.583415955389167_network"
 
 # # N=30, M=1 # no weight leverage
 init_network_str = "10.209733547617143_network"
@@ -149,5 +143,5 @@ if num_layers == 1:
     cbar_ax = fig.add_axes([0.85, 0.15, 0.03, 0.7]) # [0.85, 0.15, 0.05, 0.7]
     fig.colorbar(g_nodes_dr, cax=cbar_ax)
 
-# plt.show()
-plt.savefig(out_str + "/network_structure-"+red_network_str+".svg")
+plt.show()
+# plt.savefig(out_str + "/network_structure-"+red_network_str+".svg")

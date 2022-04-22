@@ -241,9 +241,6 @@ if __name__ == '__main__':
     init_network_str = "33.295454885318456_network"
     red_network_str = "19.583415955389167_network"
 
-    # # # # N=30, M=1 # no weight leverage
-    # init_network_str = "10.209733547617143_network"
-    # red_network_str = "2.57661598537072_network"
 
     initial_network = np.load(path_str + init_network_str + ext_str)
     reduced_network = np.load(path_str + red_network_str + ext_str)
@@ -300,9 +297,6 @@ if __name__ == '__main__':
         ax.set_box_aspect([1,1,1])
         ax.view_init(23,-68)
         plt.subplots_adjust(wspace=0, hspace=0)
-        #  left=-0.5
-        # plt.show()
-        # subplot_ind += 1
-    # plt.tight_layout()
+
     # plt.show()
     plt.savefig(out_str + "/3d_struct.svg", bbox_inches='tight',pad_inches = 0)
