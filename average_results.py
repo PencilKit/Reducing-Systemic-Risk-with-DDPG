@@ -192,7 +192,7 @@ def average_dr(N_NODES, NUM_LAYERS, NUM_EPISODES, LEVERAGE_EXP=False, CASE=None,
 
     policy_list = np.array([float(dr) for dr in os.listdir(policy_path)])
 
-    min_policy_folder_name = str(np.min(policy_list)) # The policy to use
+    min_policy_folder_name = str(policy_list[0]) # The policy to use
     policy_path = os.path.join(policy_path, min_policy_folder_name)
     saved_policy = tf.saved_model.load(policy_path)
 
