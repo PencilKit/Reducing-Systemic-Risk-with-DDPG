@@ -1,4 +1,4 @@
-# Reducing-Systemic-Risk-with-DDPG
+# Reducing Systemic Risk with DDPG
 
 # Description
 We use the DDPG algorithm to reduce systemic risk in terms of the DebtRank Measure. This repo contains the python code used to train and evaluate the DDPG agent to produce the results in Le and Ku (2022). Reducing the systemic risk of a financial network via re-organization of the interbank relationship was inspired by Diem et al. (2020). 
